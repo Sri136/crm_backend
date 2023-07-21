@@ -26,11 +26,17 @@ exports.createTicket = async (req, res) => {
     /**
      * Logic to find an Engineer in the Approved state 
      */
-    const engineer = await User.findOne({
+    const engineerCount = await User.count({
         userType: constants.userTypes.engineer,
         userStatus: constants.userStatus.approved
     });
+    const random = Math.floor(Math.random() * engineerCount);
+    const engineer = await User.findOne({
+        userType: constants.userTypes.engineer,
+        userStatus: constants.userStatus.approved
+    }).skip(random);
     ticketObject.assignee = engineer.userId;
+
 
     try {
         const ticket = await Ticket.create(ticketObject);
@@ -50,7 +56,7 @@ exports.createTicket = async (req, res) => {
             /**
              * Sending the notification to the assigned Engineer in asynchronous manner
              */
-            sendEmail(ticket._id,"Ticket with id: " +ticket._id +" created",ticket.description, user.email + "," + engineer.email,user.email);
+            // sendEmail(ticket._id,"Ticket with id: " +ticket._id +" created",ticket.description, user.email + "," + engineer.email,user.email);
 
 
             res.status(201).send(objectConvertor.ticketResponse(ticket));
@@ -100,7 +106,7 @@ exports.updateTicket = async (req, res) => {
         /**
          * Sending the notification for ticket updation
          */
-        sendEmail(ticket._id,"Ticket with id: " +ticket._id +" updated",ticket.description, savedUser.email + "," + engineer.email+ "," + reporter.email,savedUser.email);
+        // sendEmail(ticket._id,"Ticket with id: " +ticket._id +" updated",ticket.description, savedUser.email + "," + engineer.email+ "," + reporter.email,savedUser.email);
 
         res.status(200).send(objectConvertor.ticketResponse(updatedTicket));
     } else {
@@ -143,6 +149,22 @@ exports.getAllTickets = async (req, res) => {
     }
 
     const tickets = await Ticket.find(queryObj);
+    res.status(200).send(objectConvertor.ticketListResponse(tickets));
+}
+
+//Get all ticket for admin
+
+exports.getAllTicketsForAdmin  = async (req, res) => {
+
+    /**
+     * First find the type of user
+     * 1. ADMIN should get the list of all the tickets in the descending order of creation date
+     * 2. Customer should be able to see only the tickets created by him/her
+     * 3. Engineer should be able to see all the tickets assigned to him or created by him
+     * 
+     */
+
+    const tickets = await Ticket.find();
     res.status(200).send(objectConvertor.ticketListResponse(tickets));
 }
 

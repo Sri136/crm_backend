@@ -13,7 +13,6 @@ const ticketSchema = new mongoose.Schema({
     description: {
         type: String,
         required: true
-        
     },
     status :{
         type: String,
@@ -21,11 +20,11 @@ const ticketSchema = new mongoose.Schema({
         default: "OPEN"
     },
     reporter :{
-        type: Number
+        type: String
         
     },
     assignee :{
-        type: Number
+        type: String
         
     },
     createdAt: {
